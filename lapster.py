@@ -72,7 +72,8 @@ for lap_name, sector_deltas in collections.OrderedDict(sorted(GLOBAL_SECTORS_DEL
         GRAPH_SECTORS.add_trace(plotly.graph_objects.Scatter(x=X_SECTOR, y=sector_deltas, name=lap_name, line={"width":2}))
     counter += 1
 GRAPH_SECTORS.update_layout(paper_bgcolor="#2C3034", template="plotly_dark")
-plotly.offline.plot(GRAPH_SECTORS, filename="./sectors.html", auto_open=False)
+# plotly.offline.plot(GRAPH_SECTORS, filename="./sectors.html", auto_open=False)
+GRAPH_SECTORS_DIV = plotly.io.to_html(GRAPH_SECTORS, include_plotlyjs=False, default_width='90%', default_height='100%', div_id="graph_sectors")
 
 counter = 0
 for lap_name, pointers_deltas in collections.OrderedDict(sorted(GLOBAL_POINTERS_DELTAS.items())).items():
@@ -82,8 +83,8 @@ for lap_name, pointers_deltas in collections.OrderedDict(sorted(GLOBAL_POINTERS_
         GRAPH_POINTERS.add_trace(plotly.graph_objects.Scatter(x=X_POINTERS, y=pointers_deltas, name=lap_name, line={"width":2}))
     counter +=1
 GRAPH_POINTERS.update_layout(paper_bgcolor="#2C3034", template="plotly_dark")
-plotly.offline.plot(GRAPH_POINTERS, filename="./pointers.html", auto_open=False)
-
+# plotly.offline.plot(GRAPH_POINTERS, filename="./pointers.html", auto_open=False)
+GRAPH_POINTERS_DIV = plotly.io.to_html(GRAPH_POINTERS, include_plotlyjs=False, default_width='90%', default_height='100%', div_id="graph_pointers")
 
 ###############################################################################
 #                              CREATE TABLE HTML                              #
@@ -117,7 +118,7 @@ def create_table_html(table_name, sector_time_data, x_graph_len, min_sectors_tim
                 color = plotly.colors.qualitative.Plotly[lap_counter % len(plotly.colors.qualitative.Plotly)]
             else:
                 color = plotly.colors.qualitative.Plotly[lap_counter]
-            lap_header_html += "<th scope=\"col\" style=\"color:{}\">{}</th>\n".format(color, lap_name)
+            lap_header_html += "<th id=\"{}\" onclick=\"showLine(event)\"scope=\"col\" style=\"color:{}\">{}</th>\n".format(lap_name, color, lap_name)
         for i in range(lap_counter, 9):
             lap_header_html += "<th scope=\"col\">-</th>\n"
 
@@ -173,5 +174,8 @@ with open("template_index.html", "r") as template_file:
 with open("index.html", "w") as template_file:
     template_file.write(TEMPLATE_HTML\
         .replace("%%SECTORS-TABLE%%", sectors_table_html)\
-        .replace("%%POINTERS-TABLE%%", pointers_table_html)
+        .replace("%%POINTERS-TABLE%%", pointers_table_html)\
+        .replace("%%SECTORS-GRAPH%%", GRAPH_SECTORS_DIV.replace("height:100%; width:90%;", "height:100%; width:90%; margin:auto"))\
+        .replace("%%POINTERS-GRAPH%%", GRAPH_POINTERS_DIV.replace("height:100%; width:90%;", "height:100%; width:90%; margin:auto"))
+
     )

@@ -9,19 +9,10 @@
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
         body {
             background-color: #2C3034;
-        }
-        iframe {
-            border: 0;
-            width: 80%;
-            height: 500px;
-            display: block;
-            margin: 0 auto;
-            resize: both;
-            overflow: auto;
-            border: 0px;
         }
         .sectors_table {
             width: 80%;
@@ -57,6 +48,7 @@
             position:absolute;
             top:30px;
             right:30px;
+            z-index: 10;
         }
         .btn:focus {
             outline: none;
@@ -65,6 +57,7 @@
         th {
             width: 80px;
             text-align: center;
+            cursor: pointer;
         }
         td {
             text-align: center;
@@ -75,39 +68,61 @@
             if (document.getElementById("switch_view").innerHTML == "Pointers") {
                 document.getElementById("switch_view").innerHTML = "Sectors";
 
-                document.getElementsByClassName("sectors")[0].style.display = "none";
+                document.getElementById("graph_sectors").style.display = "none";
                 [].forEach.call(document.querySelectorAll('.pointers_table'), function (el) {
                     el.style.display = 'table';
                 });
 
-                document.getElementsByClassName("pointers")[0].style.display = "block";
+                document.getElementById("graph_pointers").style.display = "block";
                 [].forEach.call(document.querySelectorAll('.sectors_table'), function (el) {
                     el.style.display = 'none';
                 });
             } else {
                 document.getElementById("switch_view").innerHTML = "Pointers";
 
-                document.getElementsByClassName("pointers")[0].style.display = "none";
+                document.getElementById("graph_pointers").style.display = "none";
                 [].forEach.call(document.querySelectorAll('.pointers_table'), function (el) {
                     el.style.display = 'none';
                 });
 
-                document.getElementsByClassName("sectors")[0].style.display = "block";
+                document.getElementById("graph_sectors").style.display = "block";
                 [].forEach.call(document.querySelectorAll('.sectors_table'), function (el) {
                     el.style.display = 'table';
                 });
             }
-        }
+        };
+        function showLine(event) {
+            var element_name = event.target.id;
+            var table_type = event.target.parentElement.parentElement.parentElement.className.split(" ")[0];
+            var graph_name = "graph_" + table_type.split("_")[0];
+
+            var graph_obj = document.getElementById(graph_name);
+            graph_obj.data.forEach(function(item, index, arr) {
+                if (item.name == element_name) {
+                    if (graph_obj.data[index].visible == "legendonly") {
+                        graph_obj.data[index].visible = "";
+                    } else {
+                        graph_obj.data[index].visible = "legendonly";
+                    }
+                    Plotly.redraw(graph_obj);
+                }
+            });
+        };
         setTimeout(() => {
-            document.getElementsByClassName("sectors")[0].style.display = "none"
+            document.getElementById("graph_sectors").style.display = "none"
         }, "400");
     </script>
 </head>
 <body>
     <button id="switch_view" type="button" class="btn btn-info" onclick="switchView()">Sectors</button>
+    %%SECTORS-GRAPH%%
+    %%POINTERS-GRAPH%%
+    <!--
     <iframe class="sectors" src="sectors.html"></iframe>
     <iframe class="pointers" src="pointers.html"></iframe>
+     -->
     %%SECTORS-TABLE%%
     %%POINTERS-TABLE%%
 </body>
 </html>
+
