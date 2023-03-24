@@ -62,6 +62,43 @@
         td {
             text-align: center;
         }
+        .video_panel {
+            border-radius: 5px;
+            height: 500px;
+            left: 100px;
+            overflow: auto;
+            position: fixed;
+            resize: both;
+            text-align: center;
+            top: 100px;
+            width: 700px;
+            z-index: 9;
+        }
+        .video_header {
+            background-color: #212529;
+            width: 100%;
+            z-index: 10;
+        }
+        .video_header_name {
+            background-color: #212529;
+            color: #fff;
+            cursor: move;
+            display: inline-block;
+            font-weight: bold;
+            padding-left: 7%;
+            width: 93%;
+            z-index: 10;
+        }
+        .video_header_buttons {
+            background-color: #212529;
+            cursor: pointer;
+            display: inline;
+            width: 7%;
+            z-index: 10;
+        }
+        video {
+            width: 100%;
+        }
     </style>
     <script>
         function switchView() {
@@ -91,9 +128,10 @@
                 });
             }
         };
-        function showLine(event) {
-            var element_name = event.target.id;
-            var table_type = event.target.parentElement.parentElement.parentElement.className.split(" ")[0];
+
+        function show_line(event) {
+            var element_name = event.target.parentElement.id;
+            var table_type = event.target.parentElement.parentElement.parentElement.parentElement.className.split(" ")[0];
             var graph_name = "graph_" + table_type.split("_")[0];
 
             var graph_obj = document.getElementById(graph_name);
@@ -108,6 +146,95 @@
                 }
             });
         };
+
+        function show_video(event) {
+            var video_filename = "../Best laps/" + event.target.parentElement.id.replace("<br>", "--") + ".mp4";
+
+            var video_elm = document.createElement("video");
+            video_elm.src = video_filename;
+            video_elm.controls = true;
+
+            var video_header_name = document.createElement("span");
+            video_header_name.classList.add("video_header_name");
+            video_header_name.innerHTML = event.target.parentElement.id.replace("<br>", "--");
+
+            var video_header_button_close = document.createElement("span");
+            video_header_button_close.classList.add("video_header_buttons");
+            video_header_button_close.innerHTML = "🔴";
+            video_header_button_close.onclick = function(event) {
+                document.body.removeChild(event.target.parentElement.parentElement);
+            };
+
+            var video_header_button_size = document.createElement("span");
+            video_header_button_size.classList.add("video_header_buttons");
+            video_header_button_size.innerHTML = "🟡";
+            video_header_button_size.onclick = function() {
+                var f_elm = document.getElementsByClassName("video_panel")[0];
+                if (f_elm.style.width == "1400px") {
+                    f_elm.style.width = "700px";
+                    f_elm.style.height = "100%";
+                    f_elm.firstChild.firstChild.style.width = "93%";
+                } else {
+                    f_elm.style.width = "1400px";
+                    f_elm.style.height = "100%";
+                    f_elm.firstChild.firstChild.style.width = "96%";
+                }
+            };
+
+            var video_header_elm = document.createElement("div");
+            video_header_elm.classList.add("video_header");
+            video_header_elm.appendChild(video_header_name);
+            video_header_elm.appendChild(video_header_button_size);
+            video_header_elm.appendChild(video_header_button_close);
+
+            var video_div_elm = document.createElement("div");
+            video_div_elm.classList.add("video_panel");
+            video_div_elm.appendChild(video_header_elm);
+            video_div_elm.appendChild(video_elm);
+
+            function dragElement(elmnt) {
+                var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+                if (document.getElementById(elmnt.id + "header")) {
+                    // if present, the header is where you move the DIV from:
+                    document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
+                } else {
+                    // otherwise, move the DIV from anywhere inside the DIV:
+                    elmnt.onmousedown = dragMouseDown;
+                }
+                function dragMouseDown(e) {
+                    e = e || window.event;
+                    e.preventDefault();
+                    // get the mouse cursor position at startup:
+                    pos3 = e.clientX;
+                    pos4 = e.clientY;
+                    document.onmouseup = closeDragElement;
+                    // call a function whenever the cursor moves:
+                    document.onmousemove = elementDrag;
+                }
+
+                function elementDrag(e) {
+                    e = e || window.event;
+                    e.preventDefault();
+                    // calculate the new cursor position:
+                    pos1 = pos3 - e.clientX;
+                    pos2 = pos4 - e.clientY;
+                    pos3 = e.clientX;
+                    pos4 = e.clientY;
+                    // set the element's new position:
+                    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+                }
+
+                function closeDragElement() {
+                    // stop moving when mouse button is released:
+                    document.onmouseup = null;
+                    document.onmousemove = null;
+                }
+            }
+            dragElement(video_div_elm);
+            document.body.appendChild(video_div_elm);
+        };
+
         setTimeout(() => {
             document.getElementById("graph_sectors").style.display = "none"
         }, "400");

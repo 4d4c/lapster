@@ -28,9 +28,9 @@ for lap_name, lap_frames in LAPS_DATA["laps"].items():
 
     sectors_times = [
         (int(lap_frames["5"]) - int(lap_frames["1"])) / 59.94,
-        (int(lap_frames["7"]) - int(lap_frames["5"])) / 59.94,
-        (int(lap_frames["10"]) - int(lap_frames["7"])) / 59.94,
-        (int(lap_frames["13"]) - int(lap_frames["10"])) / 59.94
+        (int(lap_frames["8"]) - int(lap_frames["5"])) / 59.94,
+        (int(lap_frames["11"]) - int(lap_frames["8"])) / 59.94,
+        (int(lap_frames["13"]) - int(lap_frames["11"])) / 59.94
     ]
     GLOBAL_SECTORS_TIME[lap_name] = sectors_times
 
@@ -56,6 +56,8 @@ for lap_name, sector_time in GLOBAL_SECTORS_TIME.items():
 for lap_name, pointer_time in GLOBAL_POINTERS_TIME.items():
     GLOBAL_POINTERS_DELTAS[lap_name] = [pointer_time[x] - MIN_POINTERS_TIME[x] for x in range(0, 12)]
 
+GLOBAL_SECTORS_DELTAS = collections.OrderedDict(sorted(GLOBAL_SECTORS_DELTAS.items()))
+GLOBAL_POINTERS_DELTAS = collections.OrderedDict(sorted(GLOBAL_POINTERS_DELTAS.items()))
 
 ###############################################################################
 #                                CREATE GRAPH                                 #
@@ -65,7 +67,7 @@ GRAPH_SECTORS = plotly.graph_objects.Figure()
 GRAPH_POINTERS = plotly.graph_objects.Figure()
 
 counter = 0
-for lap_name, sector_deltas in collections.OrderedDict(sorted(GLOBAL_SECTORS_DELTAS.items())).items():
+for lap_name, sector_deltas in GLOBAL_SECTORS_DELTAS.items():
     if counter > 5:
         GRAPH_SECTORS.add_trace(plotly.graph_objects.Scatter(x=X_SECTOR, y=sector_deltas, name=lap_name, line={"width":2}, visible="legendonly"))
     else:
@@ -76,7 +78,7 @@ GRAPH_SECTORS.update_layout(paper_bgcolor="#2C3034", template="plotly_dark")
 GRAPH_SECTORS_DIV = plotly.io.to_html(GRAPH_SECTORS, include_plotlyjs=False, default_width='90%', default_height='100%', div_id="graph_sectors")
 
 counter = 0
-for lap_name, pointers_deltas in collections.OrderedDict(sorted(GLOBAL_POINTERS_DELTAS.items())).items():
+for lap_name, pointers_deltas in GLOBAL_POINTERS_DELTAS.items():
     if counter > 5:
         GRAPH_POINTERS.add_trace(plotly.graph_objects.Scatter(x=X_POINTERS, y=pointers_deltas, name=lap_name, line={"width":2}, visible="legendonly"))
     else:
@@ -95,7 +97,7 @@ def split_dict(dict_data, dict_size):
     for i in range(0, len(keys), dict_size):
         yield {k: dict_data[k] for k in keys[i: i + dict_size]}
 
-def create_table_html(table_name, sector_time_data, x_graph_len, min_sectors_time, max_sector_time):
+def create_table_html(table_name, sector_time_data, sector_delta_data, x_graph_len, min_sectors_time, max_sector_time):
     table_html = ""
     table_template = """
     <table class="{} table table-dark table-striped table-sm table-hover rounded rounded-3 overflow-hidden table-fixed">
@@ -110,7 +112,6 @@ def create_table_html(table_name, sector_time_data, x_graph_len, min_sectors_tim
         </tbody>
     <table>
     """
-
     for sector_data in split_dict(collections.OrderedDict(sorted(sector_time_data.items())), 10):
         lap_header_html = ""
         for lap_counter, lap_name in enumerate(sector_data.keys()):
@@ -118,7 +119,7 @@ def create_table_html(table_name, sector_time_data, x_graph_len, min_sectors_tim
                 color = plotly.colors.qualitative.Plotly[lap_counter % len(plotly.colors.qualitative.Plotly)]
             else:
                 color = plotly.colors.qualitative.Plotly[lap_counter]
-            lap_header_html += "<th id=\"{}\" onclick=\"showLine(event)\"scope=\"col\" style=\"color:{}\">{}</th>\n".format(lap_name, color, lap_name)
+            lap_header_html += "<th id=\"{}\" scope=\"col\" style=\"color:{}\"><span onclick=\"show_video(event)\">🎞️</span><span onclick=\"show_line(event)\">{}</span></th>\n".format(lap_name, color, lap_name)
         for i in range(lap_counter, 9):
             lap_header_html += "<th scope=\"col\">-</th>\n"
 
@@ -144,16 +145,18 @@ def create_table_html(table_name, sector_time_data, x_graph_len, min_sectors_tim
             # TAG: 0/14
             # sector_rows_html += "<th scope=\"row\">{}</th>\n".format(sector_counter - 1)
             sector_rows_html += "<th scope=\"row\">{}</th>\n".format(sector_counter)
+            lap_counter = 0
             for sector_time in sector_times:
                 if sector_time == "-":
                     sector_rows_html += "<td>{}</td>\n".format(sector_time)
                 else:
                     if sector_time in min_sectors_time[sector_counter - 1]:
-                        sector_rows_html += "<td class=\"top_sector\">{:.4f}</td>\n".format(sector_time)
+                        sector_rows_html += "<td class=\"top_sector\">{:.4f} (+{:.2f})</td>\n".format(sector_time, sector_delta_data[list(sector_data)[lap_counter]][sector_counter - 1])
                     elif sector_time in max_sector_time[sector_counter - 1]:
-                        sector_rows_html += "<td class=\"bottom_sector\">{:.4f}</td>\n".format(sector_time)
+                        sector_rows_html += "<td class=\"bottom_sector\">{:.4f} (+{:.2f})</td>\n".format(sector_time, sector_delta_data[list(sector_data)[lap_counter]][sector_counter - 1])
                     else:
-                        sector_rows_html += "<td>{:.4f}</td>\n".format(sector_time)
+                        sector_rows_html += "<td>{:.4f} (+{:.2f})</td>\n".format(sector_time, sector_delta_data[list(sector_data)[lap_counter]][sector_counter - 1])
+                    lap_counter += 1
             sector_rows_html += "</tr>\n"
 
             sector_counter += 1
@@ -164,8 +167,8 @@ def create_table_html(table_name, sector_time_data, x_graph_len, min_sectors_tim
     return table_html
 
 
-sectors_table_html = create_table_html("sectors_table", GLOBAL_SECTORS_TIME, len(X_SECTOR), MIN_2_SECTORS_TIME, MAX_2_SECTORS_TIME)
-pointers_table_html = create_table_html("pointers_table", GLOBAL_POINTERS_TIME, len(X_POINTERS), MIN_2_POINTERS_TIME, MAX_2_POINTERS_TIME)
+sectors_table_html = create_table_html("sectors_table", GLOBAL_SECTORS_TIME, GLOBAL_SECTORS_DELTAS, len(X_SECTOR), MIN_2_SECTORS_TIME, MAX_2_SECTORS_TIME)
+pointers_table_html = create_table_html("pointers_table", GLOBAL_POINTERS_TIME, GLOBAL_POINTERS_DELTAS, len(X_POINTERS), MIN_2_POINTERS_TIME, MAX_2_POINTERS_TIME)
 
 
 with open("template_index.html", "r") as template_file:
