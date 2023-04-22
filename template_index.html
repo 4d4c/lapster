@@ -101,6 +101,41 @@
         }
     </style>
     <script>
+        function show_by_kart_number(event) {
+            var kart_number = 0;
+            if (event.target.hasAttribute("title")) {
+                kart_number = event.target.title;
+            } else {
+                kart_number = event.target.parentElement.title;
+            }
+
+            var all_laps = document.querySelectorAll("th[title='" + kart_number + "']");
+
+            hide_all_lines(event);
+
+            all_laps.forEach(function(element) {
+                show_line_by_kart_number(element);
+            });
+        };
+
+        if (document.addEventListener) {
+            document.addEventListener('contextmenu', function(event) {
+                if ((event.target.hasAttribute("id") && event.target.id.includes("<br>")) ||
+                    (event.target.hasAttribute("onclick") && event.target.onclick)) {
+                    show_by_kart_number(event);
+                    event.preventDefault();
+                }
+            }, false);
+        } else {
+            document.attachEvent('oncontextmenu', function(event) {
+                if ((event.target.hasAttribute("id") && event.target.id.includes("<br>")) ||
+                    (event.target.hasAttribute("onclick") && event.target.onclick)) {
+                    show_by_kart_number(event);
+                    window.event.returnValue = false;
+                }
+            });
+        }
+
         function switchView() {
             if (document.getElementById("switch_view").innerHTML == "Pointers") {
                 document.getElementById("switch_view").innerHTML = "Sectors";
@@ -147,6 +182,35 @@
             });
         };
 
+        function hide_all_lines(event) {
+            var table_type = "";
+            if (event.target.hasAttribute("title")) {
+                table_type = event.target.parentElement.parentElement.parentElement.className.split(" ")[0];
+            } else {
+                table_type = event.target.parentElement.parentElement.parentElement.parentElement.className.split(" ")[0];
+            }
+            var graph_name = "graph_" + table_type.split("_")[0];
+            var graph_obj = document.getElementById(graph_name);
+            graph_obj.data.forEach(function(item, index, arr) {
+                graph_obj.data[index].visible = "legendonly";
+            });
+            Plotly.redraw(graph_obj);
+        };
+
+        function show_line_by_kart_number(element) {
+            var element_name = element.id;
+            var table_type = element.parentElement.parentElement.parentElement.className.split(" ")[0];
+            var graph_name = "graph_" + table_type.split("_")[0];
+
+            var graph_obj = document.getElementById(graph_name);
+            graph_obj.data.forEach(function(item, index, arr) {
+                if (item.name == element_name) {
+                    graph_obj.data[index].visible = "";
+                }
+            });
+            Plotly.redraw(graph_obj);
+        };
+
         function show_video(event) {
             var video_filename = "../Best laps/" + event.target.parentElement.id.replace("<br>", "--") + ".mp4";
 
@@ -168,8 +232,8 @@
             var video_header_button_size = document.createElement("span");
             video_header_button_size.classList.add("video_header_buttons");
             video_header_button_size.innerHTML = "🟡";
-            video_header_button_size.onclick = function() {
-                var f_elm = document.getElementsByClassName("video_panel")[0];
+            video_header_button_size.onclick = function(event) {
+                var f_elm = event.target.parentElement.parentElement;
                 if (f_elm.style.width == "1400px") {
                     f_elm.style.width = "700px";
                     f_elm.style.height = "100%";

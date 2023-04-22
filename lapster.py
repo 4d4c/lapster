@@ -69,9 +69,9 @@ GRAPH_POINTERS = plotly.graph_objects.Figure()
 counter = 0
 for lap_name, sector_deltas in GLOBAL_SECTORS_DELTAS.items():
     if counter > 5:
-        GRAPH_SECTORS.add_trace(plotly.graph_objects.Scatter(x=X_SECTOR, y=sector_deltas, name=lap_name, line={"width":2}, visible="legendonly"))
+        GRAPH_SECTORS.add_trace(plotly.graph_objects.Scatter(x=X_SECTOR, y=sector_deltas, name="-".join(lap_name.split("-")[:-1]), line={"width":2}, visible="legendonly"))
     else:
-        GRAPH_SECTORS.add_trace(plotly.graph_objects.Scatter(x=X_SECTOR, y=sector_deltas, name=lap_name, line={"width":2}))
+        GRAPH_SECTORS.add_trace(plotly.graph_objects.Scatter(x=X_SECTOR, y=sector_deltas, name="-".join(lap_name.split("-")[:-1]), line={"width":2}))
     counter += 1
 GRAPH_SECTORS.update_layout(paper_bgcolor="#2C3034", template="plotly_dark")
 # plotly.offline.plot(GRAPH_SECTORS, filename="./sectors.html", auto_open=False)
@@ -80,9 +80,9 @@ GRAPH_SECTORS_DIV = plotly.io.to_html(GRAPH_SECTORS, include_plotlyjs=False, def
 counter = 0
 for lap_name, pointers_deltas in GLOBAL_POINTERS_DELTAS.items():
     if counter > 5:
-        GRAPH_POINTERS.add_trace(plotly.graph_objects.Scatter(x=X_POINTERS, y=pointers_deltas, name=lap_name, line={"width":2}, visible="legendonly"))
+        GRAPH_POINTERS.add_trace(plotly.graph_objects.Scatter(x=X_POINTERS, y=pointers_deltas, name="-".join(lap_name.split("-")[:-1]), line={"width":2}, visible="legendonly"))
     else:
-        GRAPH_POINTERS.add_trace(plotly.graph_objects.Scatter(x=X_POINTERS, y=pointers_deltas, name=lap_name, line={"width":2}))
+        GRAPH_POINTERS.add_trace(plotly.graph_objects.Scatter(x=X_POINTERS, y=pointers_deltas, name="-".join(lap_name.split("-")[:-1]), line={"width":2}))
     counter +=1
 GRAPH_POINTERS.update_layout(paper_bgcolor="#2C3034", template="plotly_dark")
 # plotly.offline.plot(GRAPH_POINTERS, filename="./pointers.html", auto_open=False)
@@ -119,7 +119,9 @@ def create_table_html(table_name, sector_time_data, sector_delta_data, x_graph_l
                 color = plotly.colors.qualitative.Plotly[lap_counter % len(plotly.colors.qualitative.Plotly)]
             else:
                 color = plotly.colors.qualitative.Plotly[lap_counter]
-            lap_header_html += "<th id=\"{}\" scope=\"col\" style=\"color:{}\"><span onclick=\"show_video(event)\">🎞️</span><span onclick=\"show_line(event)\">{}</span></th>\n".format(lap_name, color, lap_name)
+            kart_number = lap_name.split("-")[-1]
+            lap_name = "-".join(lap_name.split("-")[:-1])
+            lap_header_html += "<th title=\"{}\" id=\"{}\" scope=\"col\" style=\"color:{}\"><span onclick=\"show_video(event)\">🎞️</span><span onclick=\"show_line(event)\">{}</span></th>\n".format(kart_number, lap_name, color, lap_name)
         for i in range(lap_counter, 9):
             lap_header_html += "<th scope=\"col\">-</th>\n"
 
