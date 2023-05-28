@@ -121,7 +121,7 @@ def create_table_html(table_name, sector_time_data, sector_delta_data, x_graph_l
                 color = plotly.colors.qualitative.Plotly[lap_counter]
             kart_number = lap_name.split("-")[-1]
             lap_name = "-".join(lap_name.split("-")[:-1])
-            lap_header_html += "<th title=\"{}\" id=\"{}\" scope=\"col\" style=\"color:{}\"><span onclick=\"show_video(event)\">🎞️</span><span onclick=\"show_line(event)\">{}</span></th>\n".format(kart_number, lap_name, color, lap_name)
+            lap_header_html += "<th onclick=\"show_line(event)\" title=\"{}\" id=\"{}\" scope=\"col\" style=\"color:{}\"><span onclick=\"show_video(event)\">🎞️</span><span>{}</span></th>\n".format(kart_number, lap_name, color, lap_name)
         for i in range(lap_counter, 9):
             lap_header_html += "<th scope=\"col\">-</th>\n"
 

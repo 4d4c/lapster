@@ -64,7 +64,6 @@
         }
         .video_panel {
             border-radius: 5px;
-            height: 500px;
             left: 100px;
             overflow: auto;
             position: fixed;
@@ -72,6 +71,7 @@
             text-align: center;
             top: 100px;
             width: 700px;
+            height: 417px;
             z-index: 9;
         }
         .video_header {
@@ -97,6 +97,7 @@
             z-index: 10;
         }
         video {
+            display: block;
             width: 100%;
         }
     </style>
@@ -165,8 +166,13 @@
         };
 
         function show_line(event) {
-            var element_name = event.target.parentElement.id;
-            var table_type = event.target.parentElement.parentElement.parentElement.parentElement.className.split(" ")[0];
+            if (event.target.tagName == "TH") {
+                var element_name = event.target.id;
+                var table_type = event.target.parentElement.parentElement.parentElement.className.split(" ")[0];
+            } else {
+                var element_name = event.target.parentElement.id;
+                var table_type = event.target.parentElement.parentElement.parentElement.parentElement.className.split(" ")[0];
+            }
             var graph_name = "graph_" + table_type.split("_")[0];
 
             var graph_obj = document.getElementById(graph_name);
@@ -236,11 +242,11 @@
                 var f_elm = event.target.parentElement.parentElement;
                 if (f_elm.style.width == "1400px") {
                     f_elm.style.width = "700px";
-                    f_elm.style.height = "100%";
+                    f_elm.style.height = "417px";
                     f_elm.firstChild.firstChild.style.width = "93%";
                 } else {
                     f_elm.style.width = "1400px";
-                    f_elm.style.height = "100%";
+                    f_elm.style.height = "811px";
                     f_elm.firstChild.firstChild.style.width = "96%";
                 }
             };
