@@ -122,7 +122,7 @@
         if (document.addEventListener) {
             document.addEventListener('contextmenu', function(event) {
                 if ((event.target.hasAttribute("id") && event.target.id.includes("<br>")) ||
-                    (event.target.hasAttribute("onclick") && event.target.onclick)) {
+                    (event.target.parentElement.hasAttribute("id") && event.target.parentElement.id.includes("<br>"))) {
                     show_by_kart_number(event);
                     event.preventDefault();
                 }
@@ -130,7 +130,7 @@
         } else {
             document.attachEvent('oncontextmenu', function(event) {
                 if ((event.target.hasAttribute("id") && event.target.id.includes("<br>")) ||
-                    (event.target.hasAttribute("onclick") && event.target.onclick)) {
+                    (event.target.parentElement.hasAttribute("id") && event.target.parentElement.id.includes("<br>"))) {
                     show_by_kart_number(event);
                     window.event.returnValue = false;
                 }
