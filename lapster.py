@@ -9,6 +9,8 @@ GLOBAL_POINTERS_TIME = {}
 GLOBAL_SECTORS_DELTAS = {}
 GLOBAL_POINTERS_DELTAS = {}
 
+GLOBAL_KART_NUMBERS = []
+
 X_SECTOR = [str(i) for i in range(1, 5)]
 X_POINTERS = [str(i) for i in range(1, 13)]
 
@@ -120,6 +122,8 @@ def create_table_html(table_name, sector_time_data, sector_delta_data, x_graph_l
             else:
                 color = plotly.colors.qualitative.Plotly[lap_counter]
             kart_number = lap_name.split("-")[-1]
+            if int(kart_number) not in GLOBAL_KART_NUMBERS:
+                GLOBAL_KART_NUMBERS.append(int(kart_number))
             lap_name = "-".join(lap_name.split("-")[:-1])
             lap_header_html += "<th onclick=\"show_line(event)\" title=\"{}\" id=\"{}\" scope=\"col\" style=\"color:{}\"><span onclick=\"show_video(event)\">🎞️</span><span>{}</span></th>\n".format(kart_number, lap_name, color, lap_name)
         for i in range(lap_counter, 9):
@@ -172,6 +176,26 @@ def create_table_html(table_name, sector_time_data, sector_delta_data, x_graph_l
 sectors_table_html = create_table_html("sectors_table", GLOBAL_SECTORS_TIME, GLOBAL_SECTORS_DELTAS, len(X_SECTOR), MIN_2_SECTORS_TIME, MAX_2_SECTORS_TIME)
 pointers_table_html = create_table_html("pointers_table", GLOBAL_POINTERS_TIME, GLOBAL_POINTERS_DELTAS, len(X_POINTERS), MIN_2_POINTERS_TIME, MAX_2_POINTERS_TIME)
 
+###############################################################################
+#                          KART SELECTOR TABLE HTML                           #
+###############################################################################
+
+GLOBAL_KART_NUMBERS.sort()
+css_right = 20 + len(GLOBAL_KART_NUMBERS) * 45
+
+kart_selector_html = """
+    <div id="kart_filter" style="right: {}px" class="btn-group" role="group">
+        <input type="radio" onchange="filter_by_kart(this)" class="btn-check" kart_number="0" id="kart_selector_0" name="btnradio" autocomplete="off" checked>
+        <label class="btn btn-outline-primary" for="kart_selector_0">0</label>
+""".format(css_right)
+
+for kart_number in GLOBAL_KART_NUMBERS:
+    kart_selector_html += """
+        <input type="radio" onchange="filter_by_kart(this)" class="btn-check" kart_number="{}" id="kart_selector_{}" name="btnradio" autocomplete="off">
+        <label class="btn btn-outline-primary" for="kart_selector_{}">{}</label>
+    """.format(kart_number, kart_number, kart_number, kart_number)
+
+kart_selector_html += '</div>'
 
 with open("template_index.html", "r") as template_file:
     TEMPLATE_HTML = template_file.read()
@@ -181,6 +205,7 @@ with open("index.html", "w") as template_file:
         .replace("%%SECTORS-TABLE%%", sectors_table_html)\
         .replace("%%POINTERS-TABLE%%", pointers_table_html)\
         .replace("%%SECTORS-GRAPH%%", GRAPH_SECTORS_DIV.replace("height:100%; width:90%;", "height:100%; width:90%; margin:auto"))\
-        .replace("%%POINTERS-GRAPH%%", GRAPH_POINTERS_DIV.replace("height:100%; width:90%;", "height:100%; width:90%; margin:auto"))
+        .replace("%%POINTERS-GRAPH%%", GRAPH_POINTERS_DIV.replace("height:100%; width:90%;", "height:100%; width:90%; margin:auto"))\
+        .replace("%%KART-SELECTOR%%", kart_selector_html)
 
     )
