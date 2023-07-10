@@ -1,7 +1,8 @@
 laps_images/*
 laps.json
-laps_backup.json
+laps_*.json
 pointers.html
 sectors.html
 index.html
 old.py
+utils/frank_backup.py

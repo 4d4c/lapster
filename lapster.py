@@ -1,6 +1,7 @@
 import collections
 import heapq
 import json
+import os
 import plotly
 
 GLOBAL_SECTORS_TIME = {}
@@ -19,7 +20,7 @@ X_POINTERS = [str(i) for i in range(1, 13)]
 #                                GET LAP DATA                                 #
 ###############################################################################
 
-with open("laps.json", "r") as laps_file:
+with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "laps.json"), "r") as laps_file:
     LAPS_DATA = json.load(laps_file)
 
 for lap_name, lap_frames in LAPS_DATA["laps"].items():
@@ -197,10 +198,10 @@ for kart_number in GLOBAL_KART_NUMBERS:
 
 kart_selector_html += '</div>'
 
-with open("template_index.html", "r") as template_file:
+with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "template_index.html"), "r") as template_file:
     TEMPLATE_HTML = template_file.read()
 
-with open("index.html", "w") as template_file:
+with open(os.path.join(os.path.dirname(os.path.realpath(__file__)),"index.html"), "w") as template_file:
     template_file.write(TEMPLATE_HTML\
         .replace("%%SECTORS-TABLE%%", sectors_table_html)\
         .replace("%%POINTERS-TABLE%%", pointers_table_html)\
